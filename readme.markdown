@@ -1,0 +1,48 @@
+# BrowserStream
+
+## example
+
+### client 
+
+``` js
+
+  var bs = require('browser-stream')(io)
+  var Dominode = require('dominode')
+  bs.createReadStream(connection, 'whatever').pipe(new Dominode('.list', '<li id=item></li>'))
+
+```
+
+### server
+
+``` js
+
+  var bs = require('browser-stream')
+  var ws = new Stream() // SOME KIND OF STREAM
+  bs.on('open', function (stream) {
+    if(stream.name == 'whatever') 
+      ws.pipe(stream)
+  })
+
+```
+
+## API
+
+### createReadStream (connection, name)
+
+open a `ReadableStream` from the other side.
+returns a `ReadableStream`.
+the other side of connection will emit a writable stream that is connected to this stream.
+
+### createWriteStream (connection, name)
+
+open a `WritableStream` to the other side.
+returns a `WritableStream`, the other side will emit a `ReadableStream` connected to this stream.
+
+### createStream
+
+open a `Stream` to the other side which is both readable and writable.
+returns a `Stream`, the other side will emit a `Stream` connected to this stream.
+
+> note to self, references to a class (`Stream`) should be capitalized, and in backticks.
+> references to an instance should be lowercase, and not in backticks unless refuring to
+> a specific variable in a code example.
