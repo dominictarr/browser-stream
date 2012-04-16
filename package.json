@@ -14,7 +14,7 @@
   "dependencies": {},
   "devDependencies": {
     "socket.io": "0.9"
-  , "express": 2.5"
+  , "express": "2.5"
   , "dominode": "0"
   , "browserify": "1.10"
   },
