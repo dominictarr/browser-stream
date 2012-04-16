@@ -1,14 +1,22 @@
 # BrowserStream
 
+## install
+
+```
+npm install browser-stream
+
+```
+
 ## example
 
 ### client 
 
 ``` js
+  var bs = require('browser-stream')(io.connect('http://localhost:3000'))
+  var dominode = require('dominode') //see https://github.com/maxogden/dominode
 
-  var bs = require('browser-stream')(io)
-  var Dominode = require('dominode')
-  bs.createReadStream(connection, 'whatever').pipe(new Dominode('.list', '<li id=item></li>'))
+  //pipe the 'whatever' stream to the dom with dominode.
+  bs.createReadStream('whatever').pipe(dominode('#list', '<li id="item"></li>'))
 
 ```
 
@@ -16,12 +24,20 @@
 
 ``` js
 
-  var bs = require('browser-stream')
+io = io.listen(app) //see https://github.com/LearnBoost/socket.io
+var _bs = require('browser-stream')
+
+io.sockets.on('connection', function (sock) {
+
+  var bs = _bs(sock) 
+
   var whatever = new Stream() // SOME KIND OF STREAM
-  bs.on('open', function (stream) {
+  bs.on('open', function (stream, opts) {
     if(stream.name == 'whatever') 
       whatever.pipe(stream)
   })
+
+}
 
 ```
 
