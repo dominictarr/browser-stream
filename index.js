@@ -5,6 +5,7 @@ var EventEmitter = require('events').EventEmitter
 module.exports = function (sock) {
   var e = new EventEmitter ()
 
+  //id use socket.io namespaces here, but they are really arwkward in this usecase.
   function _writeStream (s) {
       var DATA = s.name
       var END = 'END_'+s.name
@@ -17,8 +18,7 @@ module.exports = function (sock) {
         sock.emit(END)
       }
       //sock.on('PAUSE_'+name, ...
-      //sock.on('DRAIN_'+name, ...
- 
+      //sock.on('DRAIN_'+name, ... 
   }
 
   function _readStream (s) {
@@ -45,7 +45,7 @@ module.exports = function (sock) {
     s.name = opts.name
     if(s.writable)
       _writeStream(s)
-    else
+    if(s.readable)
       _readStream(s)
     return s
   }
@@ -78,10 +78,8 @@ module.exports = function (sock) {
     if(s.writeable) {
       _writeStream(s, sock)
     }
-
     e.emit('open', s)
   })
 
   return e
-
 } 
