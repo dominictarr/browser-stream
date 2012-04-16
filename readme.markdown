@@ -17,13 +17,15 @@
 ``` js
 
   var bs = require('browser-stream')
-  var ws = new Stream() // SOME KIND OF STREAM
+  var whatever = new Stream() // SOME KIND OF STREAM
   bs.on('open', function (stream) {
     if(stream.name == 'whatever') 
-      ws.pipe(stream)
+      whatever.pipe(stream)
   })
 
 ```
+
+this will connect `whatever` to the `Dominode` stream, rendering it, in the browser!
 
 ## API
 
