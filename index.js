@@ -39,11 +39,11 @@ module.exports = function (sock) {
 
   function _createStream(opts) {
     var s = new Stream()
-    var def = !opts.writable && !opts.readable 
+    var def = !opts.writeable && !opts.readable 
     s.readable = opts.readable || def
     s.writeable = opts.writeable || def
     s.name = opts.name
-    if(s.writable)
+    if(s.writeable)
       _writeStream(s)
     if(s.readable)
       _readStream(s)
@@ -55,29 +55,24 @@ module.exports = function (sock) {
   }
  
   e.createReadStream = function (name) {
-    return this.createStream(name, {writeable: true})
+    return this.createStream(name, {readable: true})
   }
 
   e.createStream = function (name, opts) {
-    opts.name = name
+    if(!opts) opts = ('string' === typeof name ? {name: name} : name)
+    name = opts.name
     var _opts = {name: name}
-    var s = _createStream(opts)
+    var s = _createStream(opts) //defaults to readable and writeable 
      if(s.readable)
-      _opts.writable = true
-    else if(s.writable)
+      _opts.writeable = true
+    else if(s.writeable)
       _opts.readable = true
-    sock.emit('CREATE_STREAM', opts)
+    sock.emit('CREATE_STREAM', _opts)
     return s
   }
   
   sock.on('CREATE_STREAM', function (opts) {
-    var s = new Stream()
-    s.name = opts.name
-    for(var k in opts)
-      s[k] = opts[k]
-    if(s.writeable) {
-      _writeStream(s, sock)
-    }
+    var s = _createStream(opts)
     e.emit('connection', s)
     e.emit('open', s) //legacy interface
   })
