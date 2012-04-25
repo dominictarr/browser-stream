@@ -32,7 +32,7 @@ io.sockets.on('connection', function (sock) {
   var bs = _bs(sock) 
 
   var whatever = new Stream() // SOME KIND OF STREAM
-  bs.on('open', function (stream, opts) {
+  bs.on('connection', function (stream, opts) {
     if(stream.name == 'whatever') 
       whatever.pipe(stream)
   })

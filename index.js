@@ -78,7 +78,8 @@ module.exports = function (sock) {
     if(s.writeable) {
       _writeStream(s, sock)
     }
-    e.emit('open', s)
+    e.emit('connection', s)
+    e.emit('open', s) //legacy interface
   })
 
   return e
