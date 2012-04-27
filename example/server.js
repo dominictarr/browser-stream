@@ -6,6 +6,7 @@ var io = require('socket.io')
 var _bs = require('browser-stream')
 var assert = require('assert')
 var browserify = require('browserify')
+var es = require('event-stream')
 var fs = require('fs')
 //TODO: allow both _bs(io) and _bs(connection)
 
@@ -31,8 +32,9 @@ console.log(io)
 io.on('connection', function (sock) {
   var bs = _bs(sock)
 
-  bs.on('open', function (stream) {
-    console.log('OPEN', stream)
+  bs.on('connection', function (stream) {
+    stream.pipe(es.stringify()).pipe(es.log())
+    console.log('OPEN', stream, stream.__proto__)
     var i = 0
     var t
     t = setInterval(function () {
