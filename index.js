@@ -39,33 +39,41 @@ module.exports = function (sock) {
 
   function _createStream(opts) {
     var s = new Stream()
-    var def = !opts.writeable && !opts.readable 
+    //if either w or r is false, def will be false
+    var def = !opts.writable && !opts.readable 
     s.readable = opts.readable || def
-    s.writeable = opts.writeable || def
+    s.writable = opts.writable || def
+    if(opts.opts || opts.options)
+      s.options  = opts.opts || opts.options
     s.name = opts.name
-    if(s.writeable)
+    if(s.writable)
       _writeStream(s)
     if(s.readable)
       _readStream(s)
     return s
   }
-
-  e.createWriteStream = function (name) {
-    return this.createStream(name, {writeable: true})
+  e.createWriteStream = function (name, opts) { 
+    return this.createStream(name, opts, {writable: true})
   }
  
-  e.createReadStream = function (name) {
-    return this.createStream(name, {readable: true})
+  e.createReadStream = function (name, opts) {
+    return this.createStream(name, opts, {readable: true})
   }
 
-  e.createStream = function (name, opts) {
-    if(!opts) opts = ('string' === typeof name ? {name: name} : name)
-    name = opts.name
+  e.createStream = function (name, opts, settings) {
+    settings = settings || {}
+    settings.name = name
+    settings.options = opts
+
     var _opts = {name: name}
-    var s = _createStream(opts) //defaults to readable and writeable 
-     if(s.readable)
-      _opts.writeable = true
-    else if(s.writeable)
+    var s = _createStream(settings) //defaults to readable and writable 
+    if(opts) {
+      _opts.options = opts
+      s.options = opts
+    }
+    if(s.readable)
+      _opts.writable = true
+    if(s.writable)
       _opts.readable = true
     sock.emit('CREATE_STREAM', _opts)
     return s
@@ -73,8 +81,8 @@ module.exports = function (sock) {
   
   sock.on('CREATE_STREAM', function (opts) {
     var s = _createStream(opts)
-    e.emit('connection', s)
-    e.emit('open', s) //legacy interface
+    e.emit('connection', s, opts.opts)
+    e.emit('open', s, opts.opts) //legacy interface
   })
 
   return e
