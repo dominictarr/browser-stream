@@ -10,31 +10,19 @@ var es = require('event-stream')
 var fs = require('fs')
 //TODO: allow both _bs(io) and _bs(connection)
 
-/*var app = http.createServer(function (req, res) {
-
-    fs.createReadStream(__dirname + req.url).pipe(res)
-
-})*/
-
 app = app
-//  .use(function (req, res) {
-//    res.end('HELLO')
-//  })
   .use(connect.static(__dirname))
   .use(browserify(__dirname+'/client.js'))
 
-io = io.listen(app.listen(3000))
-
-//io = io.listen(app)
-
-console.log(io)
+io = io.listen(app.listen(3000, function () {
+  console.log('BrowserStream example running on port 3000')
+}))
 
 io.on('connection', function (sock) {
   var bs = _bs(sock)
-
   bs.on('connection', function (stream) {
+    console.log('STREAM OPTIONS', stream)
     stream.pipe(es.stringify()).pipe(es.log())
-    console.log('OPEN', stream, stream.__proto__)
     var i = 0
     var t
     t = setInterval(function () {
