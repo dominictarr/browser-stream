@@ -1,11 +1,42 @@
 
 var Stream = require('stream').Stream
-var EventEmitter = require('events').EventEmitter
+
+/*
+Although sockjs and browserchannel are consistent on the client
+they are different on the server, while socket.io are consistent on the client and the server...
+
+I think I gotta fit in the reconnector some place different...
+also, it's only the client side that should reconnect.
+the server shouldn't.
+*/
+//so I probably want to pass this a reconnector
+//that replicates the EventEmitter interface,
+//and emits 'disconnect', and then 'connect' when reconnected.
+//it buffers emitted events if not connected,
+//but all streams should end on disconnect.
+//feels like this shoud be a seperate module
 
 module.exports = function (sock) {
+
+/*
+  socket.io is a bad pattern. it's a single lib,
+  but it _should_ be a small ecosystem of tools.
+
+  gonna replace this with something that the other stream-fallback modules.
+  sockjs, and BrowserChannel. they are both pretty much the same...
+
+  when you call creatStream() it should return a stream immediately.
+  thats how it is everywhere else in node.
+  
+  but, if there is a disconnection, all the streams should emit 'end'.
+  then emit 'error' if you try to write to them after?
+
+  hmm, I think I want to wrap the stream in a EventEmitter interface.
+  and then turn that into the multiplexed stream.
+*/
+
   var e = new EventEmitter ()
   var count = 1
-  //id use socket.io namespaces here, but they are really arwkward in this usecase.
   var DATA   = ''
     , END    = '.'
     , PAUSE  = '?'
@@ -45,9 +76,11 @@ module.exports = function (sock) {
       s.emit('end')
       sock.removeListener(DATA + id, onData)
       sock.removeListener(END + id, onEnd)
+      sock.removeListener('disconnect', onEnd)
     }
     sock.on(DATA + id, onData)
     sock.on(END + id, onEnd)
+    sock.on('disconnect', onEnd)
 
     s.pause = function () {
       s.paused = true
