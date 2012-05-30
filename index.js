@@ -1,6 +1,6 @@
 
 var Stream = require('stream').Stream
-
+var EventEmitter = require('events').EventEmitter
 /*
 Although sockjs and browserchannel are consistent on the client
 they are different on the server, while socket.io are consistent on the client and the server...
