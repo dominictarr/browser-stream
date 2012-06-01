@@ -1,67 +1,35 @@
 
 var a = require('assertions')
-var EventEmitter = require('events').EventEmitter
+var RemoteEventEmitter = require('./remote-events')
+var consistent = require('./consistent')
 var es = require('event-stream')
 var _bs = require('..')
+
 /*
   socket.io behaves like two linked EventEmitters.
   calling emit on one, triggers listeners on the other.
 
-test that two streams match.
-i.e.
+  (see RemoteEventEmitter)
 
-*/
-/*
+  test that two streams match.
+
   create a master stream and slave streams,
   assert that every chunk written to the master
   is eventually written to the slave.
+
+  OKAY, my disconnection error is in HERE
+  somewhere in here, things are breaking after reconnecting.
+  what is it?
+
+  
 */
 
-function consistent(test) {
-  test = test || a.deepEqual
-  var stream = es.through()
-  var chunks = 0
-  stream.on('data', function () {
-    chunks ++
-  })
-  stream.createSlave = function () {
-    var expected = [], count = 0, ended = false
-    stream.on('data', function (data) {
-      expected.push(data)
-    })
-    var slave = es.through()
-    slave.on('data', function (data) {
-      a.greaterThan(expected.length, 0, 'slave stream did not expect write')
-      a.equal(ended, false, 'slave expected stream not to have ended') 
-      var next = expected.shift()
-      count ++
-      test(next, data)
-    })
-    //it's okay to pass data to end(data)
-    //but never emit('end', data)
-    slave.on('end', function () {
-      ended = true
-      a.equal(expected.length, 0, 'slave stream expected 0 more writes')
-    })
-    slave.validate = function (message) {
-      a.equal(count, chunks, 'slave must recieve same number of chunks as master')
-    }
-    return slave
-  }
-  return stream
-}
 
 function pair(f) {
-  var a = new EventEmitter()
-  var b = new EventEmitter()
-  a.emit = function () {
-//    console.log.apply(null, ['emit:a'].concat([].slice.call(arguments)))
-    EventEmitter.prototype.emit.apply(b, arguments); return a
-  }
-  b.emit = function () {
-  //  console.log.apply(null, ['emit:b'].concat([].slice.call(arguments)))
-    EventEmitter.prototype.emit.apply(a, arguments); return b
-  }
+  var a , b = new RemoteEventEmitter(
+      a = new RemoteEventEmitter
+    )
+  a.connect()
   return [a, b]
 }
 
@@ -75,7 +43,6 @@ function randomNumberStream (max, count) {
     cb()
   })
 }
-
 
 ;(function simple () {
 
@@ -182,8 +149,7 @@ the next write should return false.
 
 then, on resume() the next write should return true
 
-actually, this is weird enough that itr doesn't make sense
-in general, just for cases like this...
+this case is pretty simple.
 */
 
 ;(function passesPauseThrough(stream) {
@@ -205,7 +171,6 @@ in general, just for cases like this...
 
   master = (client.createWriteStream('paused'))
 
-
   a.equal(master.write('hello'), true, 'should be free')
   a.equal(master.write('paused now'), false, 'should be paused')
   a.equal(master.write('hello'), true, 'should be free2')
@@ -214,36 +179,4 @@ in general, just for cases like this...
   master.end() 
   console.log('pause is correct')
 })();
-/*
-  assert that after returning false
-  a stream will eventually emit drain
 
-  I think this may be too tight.
-  I think the contract is just that
-  
-*/
-
-/*function eventuallyEmitsDrain (stream) {
-  var _write = stream.write
-    , paused = false
-    , expectPause = false
-
-  stream.write = function () {
-    var args = [].slice.call(arguments)
-    var returned = _write.apply(stream, args)
-    if(returned === false) {
-      if(!paused) {
-        stream.once('drain', function () {
-          paused = false
-        })
-        paused = true
-      }
-    }
-    if(expectPause)
-      a.equal(returned, false, 'expected write to return false') 
-  }
-  var _pause = stream.pause
-  stream.pause = function () {
-    expectPause = true
-  }
-}*/
