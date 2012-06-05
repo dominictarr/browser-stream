@@ -16,7 +16,12 @@ npm install browser-stream
   var dominode = require('dominode') //see https://github.com/maxogden/dominode
   var opts = {options: 'pass an optional object with the createReadStream message. maybe useful!'})
   //pipe the 'whatever' stream to the dom with dominode.
-  bs.createReadStream('whatever', options).pipe(dominode('#list', '<li id="item"></li>'))
+  bs.createReadStream('whatever', options)
+    .on('error', function (err) {
+      //unexpected disconnect
+      console.error(err)
+    })
+    .pipe(dominode('#list', '<li id="item"></li>'))
 
 ```
 
@@ -36,6 +41,10 @@ io.sockets.on('connection', function (sock) {
     if(stream.name == 'whatever') 
       whatever.pipe(stream)
     //stream.options -- will be the same as `opts` from the client side!
+    stream.on('error', function (err) {
+      //the client has unexpectedly disconnected. tidy up!
+      console.error(err)
+    })
   })
 
 }
