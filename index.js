@@ -105,13 +105,13 @@ module.exports = function (sock) {
 
       s.end = function (data) {
         if(data != null) this.write(data)
-        ended = true
-        sock.emit(END + id)
-        cleanup()
+        if(!ended) sock.emit(END + id)
+        s.destroy()
       }
 
       s.destroy = function () {
         ended = true
+        cleanup()
         s.emit('close')
       }
 
@@ -133,11 +133,13 @@ module.exports = function (sock) {
 
       s.pause = function () {
         s.paused = true
+        if(ended) return
         sock.emit(PAUSE + id)
       }
 
       s.resume = function () {
         s.paused = false
+        if(ended) return
         sock.emit(RESUME + id)
       }
     } //end of setting up readable stream
