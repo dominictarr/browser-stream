@@ -11,12 +11,15 @@
   "engines": {
     "node": "0.6"
   },
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
-    "socket.io": "0.9"
-  , "express": "2.5"
-  , "dominode": "0"
-  , "browserify": "1.10"
+    "socket.io": "0.9",
+    "express": "2.5",
+    "dominode": "0",
+    "browserify": "1.10",
+    "domready": "~0.2.11",
+    "skates": "0.0.1"
   },
   "optionalDependencies": {}
 }

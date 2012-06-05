@@ -40,7 +40,7 @@ module.exports = function (sock) {
     , ERROR  = '!'
 
   function _createStream(opts) {
-    var s = new Stream()
+    var s = new Stream(), ended = false
     //if either w or r is false, def will be false
     var def = !opts.writable && !opts.readable 
     s.readable = opts.readable || def
@@ -50,79 +50,101 @@ module.exports = function (sock) {
     s.name = opts.name
     s._id      = opts._id || count ++
 
+    function onPause () {
+      s.paused = true
+    }
+
+    function onResume () {
+      s.paused = false
+      s.emit('drain')
+    }
+
+    function cleanup () {
+      sock.removeListener(PAUSE + id, onPause)
+      sock.removeListener(RESUME + id, onResume)
+      sock.removeListener(DATA + id, onData)
+      sock.removeListener(END + id, onEnd)
+      sock.removeListener('disconnect', onDisconnect)
+    }
+
+    function onDisconnect () {
+      cleanup() 
+      s.writable = s.readable = false
+      if(!ended) {
+        s.emit('error', new Error('unexpected disconnection (call end() first)'))
+        s.emit('close')
+      }
+      ended = true
+    }
+
+    sock.on('disconnect', onDisconnect)
+
+    function onData(data) {
+      s.emit('data', data)
+    }
+
+    function onEnd () {
+      cleanup()
+      if(!ended) {
+        s.emit('end')
+        s.emit('close')
+      }
+      ended = true
+      //ended = true
+     //OH, I didn't understand about close.
+      //that means you can't write anymore.
+    }
+
     if(s.writable) {
       var id = s._id
        s.write = function (data) {
+        if(ended) throw new Error('write to ended stream')
         sock.emit(DATA + id, data)
         return !s.paused
       }
 
       s.end = function (data) {
         if(data != null) this.write(data)
+        ended = true
         sock.emit(END + id)
         cleanup()
       }
-      function onPause () {
-        s.paused = true
-      }
-      function onResume () {
-        s.paused = false
-        s.emit('drain')
-      }
-      function onDisconnect () {
-        console.log('DISCONNECT!!!!')
+
+      s.destroy = function () {
+        ended = true
         s.emit('close')
-        cleanup() 
       }
 
       sock.on(PAUSE + id, onPause)
       sock.on(RESUME + id, onResume)
-      sock.on('disconnect', onDisconnect)
 
-      function cleanup () {
-        sock.removeListener(PAUSE + id, onPause)
-        sock.removeListener(RESUME + id, onResume)
-        sock.removeListener('disconnect', onDisconnect)
-      }
-      //TODO but remember, some errors are circular.
+     //TODO but remember, some errors are circular.
       //sock.on(ERROR + id, function (error) {
       //  s.emit('error', error)
       //}
 
     }
-    if(s.readable){
+
+    if(s.readable) {
       var id = s._id
       s.readable = true
-      function onData(data) {
-        s.emit('data', data)
-      }
-      function onEnd () {
-        s.emit('end')
-        sock.removeListener(DATA + id, onData)
-        sock.removeListener(END + id, onEnd)
-        sock.removeListener('disconnect', onEnd)
-        //OH, I didn't understand about close.
-        //that means you can't write anymore.
-      }
       sock.on(DATA + id, onData)
       sock.on(END + id, onEnd)
-      sock.on('disconnect', onEnd)
 
       s.pause = function () {
         s.paused = true
         sock.emit(PAUSE + id)
       }
+
       s.resume = function () {
         s.paused = false
         sock.emit(RESUME + id)
       }
-      //s.on('error', function (error) {
-      //})
-
     } //end of setting up readable stream
 
     return s
   }
+
   e.createWriteStream = function (name, opts) { 
     return this.createStream(name, opts, {writable: true})
   }
@@ -138,10 +160,12 @@ module.exports = function (sock) {
 
     var _opts = {name: name}
     var s = _createStream(settings) //defaults to readable and writable 
+
     if(opts) {
       _opts.options = opts
       s.options = opts
     }
+
     if(s.readable)
       _opts.writable = true
     if(s.writable)
@@ -150,10 +174,10 @@ module.exports = function (sock) {
     return s
   }
   
-  sock.on('CREATE_STREAM', function (opts) {
-    var s = _createStream(opts)
-    e.emit('connection', s, opts.opts)
-    e.emit('open', s, opts.opts) //legacy interface
+  sock.on('CREATE_STREAM', function (settings) {
+    var s = _createStream(settings)
+    e.emit('connection', s, settings.options)
+    e.emit('open', s, settings.options) //legacy interface
   })
 
   return e
