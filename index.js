@@ -18,6 +18,7 @@ except that A.on('event',listener) is triggered by B.emit('event')
 
 module.exports = function (sock) {
 
+  var streams = {}
 /*
   socket.io is a bad pattern. it's a single lib,
   but it _should_ be a small ecosystem of tools.
@@ -48,6 +49,10 @@ module.exports = function (sock) {
     if(opts.opts || opts.options)
       s.options  = opts.opts || opts.options
     s.name = opts.name
+    if(streams[opts.name])
+      throw new Error('stream with name "'+opts.name + '" already exists')
+    streams[opts.name] = true
+    
     s._id      = opts._id || count ++
 
     function onPause () {
@@ -60,6 +65,7 @@ module.exports = function (sock) {
     }
 
     function cleanup () {
+      delete streams[s.name]
       sock.removeListener(PAUSE + id, onPause)
       sock.removeListener(RESUME + id, onResume)
       sock.removeListener(DATA + id, onData)
@@ -160,9 +166,8 @@ module.exports = function (sock) {
     settings.name = name
     settings.options = opts
 
-    var _opts = {name: name}
     var s = _createStream(settings) //defaults to readable and writable 
-
+    var _opts = {name: name, _id: s._id}
     if(opts) {
       _opts.options = opts
       s.options = opts
@@ -178,8 +183,9 @@ module.exports = function (sock) {
   
   sock.on('CREATE_STREAM', function (settings) {
     var s = _createStream(settings)
+    console.log('CREATE_STREAM', s, settings, streams)
     e.emit('connection', s, settings.options)
-    e.emit('open', s, settings.options) //legacy interface
+  //  e.emit('open', s, settings.options) //legacy interface
   })
 
   return e
