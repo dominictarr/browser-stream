@@ -28,6 +28,7 @@ var app = skates()
       stream.on('close', function (){
         clearInterval(t)
       })
+      stream.on('error', function () {})
     })
   })
   .listen(3000, function () {
