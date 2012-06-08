@@ -65,6 +65,7 @@ module.exports = function (sock) {
     }
 
     function cleanup () {
+      s.writable = s.readable = false
       delete streams[s.name]
       sock.removeListener(PAUSE + id, onPause)
       sock.removeListener(RESUME + id, onResume)
@@ -74,11 +75,9 @@ module.exports = function (sock) {
     }
 
     function onDisconnect () {
-      cleanup() 
-      s.writable = s.readable = false
       if(!ended) {
         s.emit('error', new Error('unexpected disconnection (call end() first)'))
-        s.emit('close')
+        cleanup() 
       }
       ended = true
     }
@@ -90,15 +89,16 @@ module.exports = function (sock) {
     }
 
     function onEnd () {
-      cleanup()
       if(!ended) {
         s.emit('end')
-        s.emit('close')
+        cleanup()
       }
+    }
+
+    s.destroy = function () {
       ended = true
-      //ended = true
-     //OH, I didn't understand about close.
-      //that means you can't write anymore.
+      cleanup()
+      s.emit('close')
     }
 
     if(s.writable) {
@@ -113,12 +113,6 @@ module.exports = function (sock) {
         if(data != null) this.write(data)
         if(!ended) sock.emit(END + id)
         s.destroy()
-      }
-
-      s.destroy = function () {
-        ended = true
-        cleanup()
-        s.emit('close')
       }
 
       sock.on(PAUSE + id, onPause)
