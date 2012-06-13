@@ -49,8 +49,8 @@ module.exports = function (sock) {
     if(opts.opts || opts.options)
       s.options  = opts.opts || opts.options
     s.name = opts.name
-    if(streams[opts.name])
-      throw new Error('stream with name "'+opts.name + '" already exists')
+    //if(streams[opts.name])
+      //throw new Error('stream with name "'+opts.name + '" already exists')
     streams[opts.name] = true
     
     s._id      = opts._id || count ++
