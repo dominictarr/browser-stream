@@ -177,9 +177,7 @@ module.exports = function (sock) {
   
   sock.on('CREATE_STREAM', function (settings) {
     var s = _createStream(settings)
-    console.log('CREATE_STREAM', s, settings, streams)
     e.emit('connection', s, settings.options)
-  //  e.emit('open', s, settings.options) //legacy interface
   })
 
   return e
