@@ -1,5 +1,10 @@
 # BrowserStream
 
+use `Stream#pipe` to send data to clients or servers.
+
+wrap `socket.io` (or another web socket abstraction that gives a remote `EventEmitter` api)
+with a interface for creating streams.
+
 ## install
 
 ```
