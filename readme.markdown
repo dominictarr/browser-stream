@@ -18,7 +18,7 @@ npm install browser-stream
 
 ``` js
   var bs = require('browser-stream')(io.connect('http://localhost:3000'))
-  var dominode = require('dominode') //see https://github.com/maxogden/dominode
+  var domnode = require('domnode') //see https://github.com/maxogden/dominode
   var opts = {options: 'pass an optional object with the createReadStream message. maybe useful!'})
   //pipe the 'whatever' stream to the dom with dominode.
   bs.createReadStream('whatever', options)
@@ -26,7 +26,7 @@ npm install browser-stream
       //unexpected disconnect
       console.error(err)
     })
-    .pipe(dominode('#list', '<li id="item"></li>'))
+    .pipe(domnode('#list', '<li id="item"></li>'))
 
 ```
 
