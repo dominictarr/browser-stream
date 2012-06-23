@@ -12,7 +12,7 @@ var fs = require('fs')
 
 app = app
   .use(connect.static(__dirname))
-  .use(browserify(__dirname+'/client.js'))
+  .use(browserify({entry: __dirname+'/client.js', cache: true}))
 
 io = io.listen(app.listen(3000, function () {
   console.log('BrowserStream example running on port 3000')
@@ -21,7 +21,6 @@ io = io.listen(app.listen(3000, function () {
 io.on('connection', function (sock) {
   var bs = _bs(sock)
   bs.on('connection', function (stream) {
-    console.log('STREAM OPTIONS', stream)
     stream.pipe(es.stringify()).pipe(es.log())
     var i = 0
     var t
