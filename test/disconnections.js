@@ -7,7 +7,7 @@
 */
 
 var a = require('assertions')
-var RemoteEventEmitter = require('./remote-events')
+var RemoteEventEmitter = require('remote-events')
 var consistent = require('./consistent')
 var bs = require('..')
 var es = require('event-stream')
@@ -28,11 +28,10 @@ function randomNumberStream (max, count) {
   var master = consistent()
   var slave = master.createSlave()
 
-  var _client, _server = 
-    new RemoteEventEmitter(
-      _client = new RemoteEventEmitter()
-    )
+  var _client = new RemoteEventEmitter()
+  var _server = new RemoteEventEmitter()
 
+  _client.getStream().pipe(_server.getStream()).pipe(_client.getStream())
   var client = bs(_client)
   var server = bs(_server)
   var count = 0, dCount = 1
@@ -82,20 +81,17 @@ function randomNumberStream (max, count) {
   or rather, SHOULD close.   
   */ 
  
-  _client.connect() //connects the server too
 })();
+
 
 ;(function simple () {
 
-  var _client, _server = 
-    new RemoteEventEmitter(
-      _client = new RemoteEventEmitter()
-    )
+  var _client = new RemoteEventEmitter()
+  var _server = new RemoteEventEmitter()
+  _client.getStream().pipe(_server.getStream()).pipe(_client.getStream())
 
   var client = bs(_client)
   var server = bs(_server)
-  _client.connect() //connects the server too
-
 
   var r1 = Math.random()
   server.on('connection', function (stream) {
@@ -116,10 +112,10 @@ function randomNumberStream (max, count) {
 
 ;(function disconnect () {
 
-  var _client, _server = 
-    new RemoteEventEmitter(
-      _client = new RemoteEventEmitter()
-    )
+  var _client = new RemoteEventEmitter()
+  var _server = new RemoteEventEmitter()
+  _client.getStream().pipe(_server.getStream()).pipe(_client.getStream())
+ 
   _client.on('disconnect', function () {
     console.log('CLIENT DISCONNECT')
   })
@@ -128,7 +124,6 @@ function randomNumberStream (max, count) {
   })
   var client = bs(_client)
   var server = bs(_server)
-  _client.connect() //connects the server too
 
   var randoms = []
   function rand() {
@@ -190,10 +185,8 @@ function randomNumberStream (max, count) {
 
 ;(function disconnect2 () {
 console.log('disconnect2')
-  var _client, _server = 
-    new RemoteEventEmitter(
-      _client = new RemoteEventEmitter()
-    )
+  var _client = new RemoteEventEmitter()
+  var _server = new RemoteEventEmitter()
 
   var client = bs(_client)
   var server = bs(_server)
@@ -223,6 +216,6 @@ console.log('disconnect2')
   .on('end', function () {
     console.log('end')
   })
-  _client.connect() //co nnects the server too
+  _client.getStream().pipe(_server.getStream()).pipe(_client.getStream())
 
 })();

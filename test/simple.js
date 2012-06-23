@@ -1,6 +1,6 @@
 
 var a = require('assertions')
-var RemoteEventEmitter = require('./remote-events')
+var RemoteEventEmitter = require('remote-events')
 var consistent = require('./consistent')
 var es = require('event-stream')
 var _bs = require('..')
@@ -26,10 +26,10 @@ var _bs = require('..')
 
 
 function pair(f) {
-  var a , b = new RemoteEventEmitter(
-      a = new RemoteEventEmitter
-    )
-  a.connect()
+  var a = new RemoteEventEmitter()
+  var b = new RemoteEventEmitter()
+  a.getStream().pipe(b.getStream()).pipe(a.getStream()) 
+
   return [a, b]
 }
 

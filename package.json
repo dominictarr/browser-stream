@@ -21,7 +21,8 @@
     "browserify": "~1.13",
     "domready": "~0.2.11",
     "skates": "0.0.1",
-    "tap": "~0.2.5"
+    "tap": "~0.2.5",
+    "remote-events": "0.0.0"
   },
   "scripts": {
     "test": "tap test/*.js"
