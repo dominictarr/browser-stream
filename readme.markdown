@@ -5,6 +5,13 @@ use `Stream#pipe` to send data to clients or servers.
 wrap `socket.io` (or another web socket abstraction that gives a remote `EventEmitter` api)
 with a interface for creating streams.
 
+### DEPRECIATED
+
+use [mux-demux](http://github.com/dominictarr/mux-demux) with [shoe](http://github.com/substack/shoe)
+
+I'm not gonna use or maintain this any more. If you want to use and maintain this module email me and I'll
+add you as owner.
+
 ## install
 
 ```
