@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/dominictarr/browser-stream.png)](http://travis-ci.org/dominictarr/browser-stream)
 # BrowserStream
 
 use `Stream#pipe` to send data to clients or servers.
